@@ -4,3 +4,4 @@ sqlalchemy
 sqlmodel
 python-dotenv
 boto3
+pydantic
