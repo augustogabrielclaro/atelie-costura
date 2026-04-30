@@ -3,6 +3,7 @@ from sqlmodel import Session
 from uuid import UUID
 from typing import List
 from datetime import date
+from fastapi.middleware.cors import CORSMiddleware
 
 from data.database import get_session, create_db_and_tables
 from contextlib import asynccontextmanager
@@ -21,6 +22,15 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan, title="Costura API - Maringá Style")
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Na fase de testes, liberamos geral. Em prod, você restringe.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_cliente_service(session: Session = Depends(get_session)) -> ClienteService:
     repo = ClienteRepository(session)
