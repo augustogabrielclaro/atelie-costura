@@ -20,7 +20,7 @@ Automatizar o envio de mensagens para clientes via WhatsApp
 
 🐍 Python
 📱 Flutter (Dart SDK)
-🐘 PostgreSQL
+🐘 SQLite
 🐳 Docker
 💻 Visual Studio Code
 🔗 API REST
