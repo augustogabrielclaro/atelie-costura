@@ -35,7 +35,11 @@ class ClienteRepository:
         self.session.commit()
         return True
     
-    def patch(self, id: UUID, cliente_patch):
-        cliente = self.get_by_id(cliente_patch.id)
+    def patch(self, cliente: Cliente, update_data: dict) -> Cliente:
+        for key, value in update_data.items():
+            setattr(cliente, key, value)
 
+        self.session.add(cliente)
+        self.session.commit()
+        self.session.refresh(cliente)
         return cliente

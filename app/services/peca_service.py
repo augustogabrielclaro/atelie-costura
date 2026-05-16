@@ -1,3 +1,4 @@
+from schemas.pedido import AllPecasOut
 from repositories.peca_repository import PecaRepository
 from services.cliente_service import ClienteService
 from models.peca import Peca
@@ -22,3 +23,12 @@ class PecaService:
 
     def listar_entregas_do_dia(self, data_alvo: date) -> List[Peca]:
         return self.peca_repo.get_entregas_por_data(data_alvo)
+    
+    def listar_todas_pecas(self) -> List[AllPecasOut]:
+        pecas = self.peca_repo.get_all()
+        return [AllPecasOut(
+            descricao=peca.descricao,
+            valor=peca.valor,
+            data_entrega=peca.data_entrega,
+            cliente_nome=self.cliente_service.repository.get_by_id(peca.cliente_id).nome
+        ) for peca in pecas]

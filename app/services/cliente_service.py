@@ -1,5 +1,7 @@
 import re
+import uuid
 from models.cliente import Cliente
+from fastapi import HTTPException, status
 from repositories.cliente_repository import ClienteRepository
 from uuid import UUID
 from typing import Optional
@@ -27,17 +29,25 @@ class ClienteService:
     
     def patch_cliente(
         self,
+        id: UUID,
         cliente_in: ClienteIn
     ) -> Cliente:
-        cliente = self.repository.get_by_id(cliente_in.id)
+        cliente = self.repository.get_by_id(id)
 
         if cliente == None:
-            raise Exception("Cliente não existente no banco de dados")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Cliente não existente no banco de dados!"
+            )
 
-        cliente.nome = cliente_in.nome if cliente_in.nome != None else cliente.nome
-        cliente.telefone = cliente_in.telefone if cliente_in.telefone != None else cliente.telefone
-        cliente.ativo = cliente_in.ativo if cliente_in.ativo != None else cliente.ativo
-        
-        novo_cliente = self.repository.patch(cliente_in)
+        update_data = cliente_in.model_dump(exclude_unset=True)
 
-        return novo_cliente
+        if "telefone" in update_data:
+            if self.repository.get_by_telefone(self.limpar_telefone(update_data["telefone"])) != None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Já existe um cliente ativo com esse telefone!"
+                )
+            update_data["telefone"] = self.limpar_telefone(update_data["telefone"])
+
+        return self.repository.patch(cliente, update_data)

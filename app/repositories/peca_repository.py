@@ -3,6 +3,7 @@ from models.peca import Peca
 from uuid import UUID
 from datetime import date
 from typing import List
+from schemas.pedido import AllPecasOut
 
 class PecaRepository:
     def __init__(self, session: Session):
@@ -21,3 +22,8 @@ class PecaRepository:
             Peca.status == "Pendente"
         )
         return self.session.exec(statement).all()
+    
+    def get_all(self) -> List[AllPecasOut]:
+        statement = select(Peca)
+        peca_list = self.session.exec(statement).all()
+        return peca_list

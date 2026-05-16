@@ -4,10 +4,9 @@ from typing import Optional
 from uuid import UUID
 
 class ClienteIn(BaseModel):
-    id: UUID
-    nome: Optional[str]
-    telefone: Optional[str]
-    ativo: Optional[bool]
+    nome: Optional[str] = None
+    telefone: Optional[str] = None
+    ativo: Optional[bool]= None
 
 class ClienteOut(BaseModel):
     id: UUID

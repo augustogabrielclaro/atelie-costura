@@ -5,6 +5,7 @@ from typing import List
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
 
+from schemas.cliente import ClienteOut, ClienteIn
 from data.database import get_session, create_db_and_tables
 from contextlib import asynccontextmanager
 
@@ -14,7 +15,7 @@ from repositories.notificacao_repository import NotificacaoRepository
 from services.cliente_service import ClienteService
 from services.peca_service import PecaService
 from services.notificacao_service import NotificacaoService
-from schemas.pedido import PedidoCompletoIn, PecaOut
+from schemas.pedido import PedidoCompletoIn, PecaOut, AllPecasOut
 from schemas.notificacao import *
 
 @asynccontextmanager
@@ -27,7 +28,7 @@ app = FastAPI(lifespan=lifespan, title="Costura API - Maringá Style")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Na fase de testes, liberamos geral. Em prod, você restringe.
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -75,6 +76,13 @@ def buscar_entregas_do_dia(
         data_alvo = date.today()
     return peca_service.listar_entregas_do_dia(data_alvo)
 
+@app.get("/pecas/all", tags=["Busca"], response_model=List[AllPecasOut])
+def listar_todas_pecas(peca_service: PecaService = Depends(get_peca_service)):
+    """
+    Endpoint para listar todas as peças, usado para debug e conferência.
+    """
+    return peca_service.listar_todas_pecas()
+
 @app.post("/notificar/enviar", tags=["Notificações"], response_model=NotificacaoOut)
 def registrar_notificacao_enviada(
     payload: NotificacaoIn,
@@ -109,15 +117,22 @@ def buscar_cliente_por_telefone(telefone: str, cliente_service: ClienteService =
     return cliente
 
 @app.delete("/clientes/{cliente_id}", tags=["Administração"])
-def deletar_cliente(cliente_id: UUID, cliente_service: ClienteService = Depends(get_cliente_service)):
+def deletar_cliente(cliente_id: str, cliente_service: ClienteService = Depends(get_cliente_service)):
     """
     Soft Delete: Apenas inativa o cliente.
     """
-    sucesso = cliente_service.repository.deactivate(cliente_id)
+    sucesso = cliente_service.repository.deactivate(uuid.UUID(cliente_id))
     if not sucesso:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     return {"msg": "Cliente desativado com sucesso"}
 
-@app.patch("/clientes/editar", tags=["Administração"])
-def editar_cliente():
-    return
+@app.patch("/clientes/{cliente_id}", tags=["Administração"], response_model=ClienteOut)
+def editar_cliente(
+    cliente_id: str,
+    cliente_in: ClienteIn, 
+    cliente_service: ClienteService = Depends(get_cliente_service)
+):
+    """
+    Edita os dados do cliente. O telefone é limpo e validado durante o processamento.
+    """
+    return cliente_service.patch_cliente(uuid.UUID(cliente_id), cliente_in)
