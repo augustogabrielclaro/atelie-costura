@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Session
-from uuid import UUID
+import uuid
 from typing import List
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +15,7 @@ from services.cliente_service import ClienteService
 from services.peca_service import PecaService
 from services.notificacao_service import NotificacaoService
 from schemas.pedido import PedidoCompletoIn, PecaOut
+from schemas.notificacao import *
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,7 +49,7 @@ def get_notificacao_service(session: Session = Depends(get_session)) -> Notifica
 
 @app.post("/pedidos/completo", tags=["Fluxo Principal"], response_model=PecaOut)
 def criar_pedido_fluxo_completo(
-    payload: PedidoCompletoIn, # Agora recebe JSON Body corretamente
+    payload: PedidoCompletoIn,
     peca_service: PecaService = Depends(get_peca_service)
 ):
     """
@@ -74,19 +75,24 @@ def buscar_entregas_do_dia(
         data_alvo = date.today()
     return peca_service.listar_entregas_do_dia(data_alvo)
 
-@app.post("/notificar/{cliente_id}/{peca_id}", tags=["Notificações"])
+@app.post("/notificar/enviar", tags=["Notificações"], response_model=NotificacaoOut)
 def registrar_notificacao_enviada(
-    cliente_id: UUID, 
-    peca_id: UUID, 
+    payload: NotificacaoIn,
     notificacao_service: NotificacaoService = Depends(get_notificacao_service),
     cliente_service: ClienteService = Depends(get_cliente_service)
 ):
     """
-    Registra que o disparo via WhatsApp foi feito (chamado pelo script local).
+    Registra que o disparo via WhatsApp foi feito.
     """
     try:
-        telefone = cliente_service.repository.get_by_id(cliente_id).telefone
-        return notificacao_service.disparar_aviso(cliente_id, peca_id, telefone)
+        cliente = cliente_service.repository.get_by_id(uuid.UUID(payload.cliente_id))
+        telefone = cliente.telefone
+        notificacao = notificacao_service.disparar_aviso(cliente.id, uuid.UUID(payload.peca_id), telefone)
+        return NotificacaoOut(
+            id=notificacao.id,
+            nome_cliente=cliente.nome,
+            mensagem=notificacao.mensagem
+        )
     except Exception as e:
         raise HTTPException(status_code=429, detail=str(e))
 
@@ -111,3 +117,7 @@ def deletar_cliente(cliente_id: UUID, cliente_service: ClienteService = Depends(
     if not sucesso:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     return {"msg": "Cliente desativado com sucesso"}
+
+@app.patch("/clientes/editar", tags=["Administração"])
+def editar_cliente():
+    return

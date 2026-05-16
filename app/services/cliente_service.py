@@ -2,6 +2,8 @@ import re
 from models.cliente import Cliente
 from repositories.cliente_repository import ClienteRepository
 from uuid import UUID
+from typing import Optional
+from schemas.cliente import ClienteIn, ClienteOut
 
 class ClienteService:
     def __init__(self, repository: ClienteRepository):
@@ -22,3 +24,20 @@ class ClienteService:
             
         novo = Cliente(nome=nome, telefone=tel_limpo)
         return self.repository.create(novo)
+    
+    def patch_cliente(
+        self,
+        cliente_in: ClienteIn
+    ) -> Cliente:
+        cliente = self.repository.get_by_id(cliente_in.id)
+
+        if cliente == None:
+            raise Exception("Cliente não existente no banco de dados")
+
+        cliente.nome = cliente_in.nome if cliente_in.nome != None else cliente.nome
+        cliente.telefone = cliente_in.telefone if cliente_in.telefone != None else cliente.telefone
+        cliente.ativo = cliente_in.ativo if cliente_in.ativo != None else cliente.ativo
+        
+        novo_cliente = self.repository.patch(cliente_in)
+
+        return novo_cliente

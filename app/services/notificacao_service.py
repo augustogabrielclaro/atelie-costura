@@ -27,5 +27,5 @@ class NotificacaoService:
             mensagem="Sua peça está pronta!",
             status="sucesso"
         )
-        self.repo_notificacao.create(log)
-        return True
+        notificacao = self.repo_notificacao.create(log)
+        return notificacao

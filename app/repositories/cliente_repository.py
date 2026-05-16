@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 from models.cliente import Cliente
 from uuid import UUID
+from schemas.cliente import ClienteIn
 
 class ClienteRepository:
     def __init__(self, session: Session):
@@ -33,3 +34,8 @@ class ClienteRepository:
         self.session.add(cliente)
         self.session.commit()
         return True
+    
+    def patch(self, id: UUID, cliente_patch):
+        cliente = self.get_by_id(cliente_patch.id)
+
+        return cliente
