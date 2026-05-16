@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 from models.cliente import Cliente
 from uuid import UUID
+from schemas.cliente import ClienteIn
 
 class ClienteRepository:
     def __init__(self, session: Session):
@@ -33,3 +34,12 @@ class ClienteRepository:
         self.session.add(cliente)
         self.session.commit()
         return True
+    
+    def patch(self, cliente: Cliente, update_data: dict) -> Cliente:
+        for key, value in update_data.items():
+            setattr(cliente, key, value)
+
+        self.session.add(cliente)
+        self.session.commit()
+        self.session.refresh(cliente)
+        return cliente
