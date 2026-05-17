@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import '../models/peca.dart';
 import '../models/cliente.dart';
+import '../models/all_peca.dart';
 import 'api_service.dart';
 
 class PecaService {
@@ -32,6 +33,11 @@ class PecaService {
   Future<List<Peca>> listarEntregasHoje() async {
     final response = await _dio.get('/entregas/hoje');
     return (response.data as List).map((p) => Peca.fromJson(p)).toList();
+  }
+
+  Future<List<AllPeca>> listarTodasPecas() async {
+    final response = await _dio.get('/pecas/all');
+    return (response.data as List).map((p) => AllPeca.fromJson(p)).toList();
   }
 
   Future<void> notificarCliente(String clienteId, String pecaId, String telefone) async {
