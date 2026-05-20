@@ -35,58 +35,77 @@ class HomeScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
 
-            children: [
-              const SizedBox(height: 20),
+              children: [
+                const SizedBox(height: 20),
 
-              const Text(
-                'Bem-vindo 👋',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: roxoEscuro,
+                const Text(
+                  'Bem-vinda',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: roxoEscuro,
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              Text(
-                'Gerencie suas encomendas de forma rápida e organizada.',
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-              ),
+                Text(
+                  'Gerencie suas encomendas de forma rápida e organizada',
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+                ),
 
-              const SizedBox(height: 40),
+                const SizedBox(height: 40),
 
-              _menuCard(
-                context,
-                icon: Icons.add_box_rounded,
-                title: 'Nova Encomenda',
-                description: 'Cadastre uma nova peça e organize os pedidos.',
-                route: '/cadastro-pedido',
-              ),
+                // NOVA ENCOMENDA
+                _menuCard(
+                  context,
+                  icon: Icons.add_box_rounded,
+                  title: 'Nova Encomenda',
+                  description: 'Cadastre uma nova peça e organize os pedidos.',
+                  route: '/cadastro-pedido',
+                ),
 
-              const SizedBox(height: 22),
+                const SizedBox(height: 22),
 
-              _menuCard(
-                context,
-                icon: Icons.local_shipping_rounded,
-                title: 'Entregas do Dia',
-                description: 'Visualize as encomendas com entrega programada.',
-                route: '/entregas-hoje',
-              ),
+                // ENTREGAS
+                _menuCard(
+                  context,
+                  icon: Icons.local_shipping_rounded,
+                  title: 'Entregas do Dia',
+                  description:
+                      'Visualize as encomendas com entrega programada.',
+                  route: '/entregas-hoje',
+                ),
 
-              const SizedBox(height: 22),
+                const SizedBox(height: 22),
 
-              _menuCard(
-                context,
-                icon: Icons.checkroom_rounded,
-                title: 'Todas as Peças',
-                description: 'Veja todas as peças cadastradas.',
-                route: '/pecas',
-              ),
-            ],
+                // PEÇAS
+                _menuCard(
+                  context,
+                  icon: Icons.checkroom_rounded,
+                  title: 'Todas as Peças',
+                  description: 'Veja todas as peças cadastradas.',
+                  route: '/pecas',
+                ),
+
+                const SizedBox(height: 22),
+
+                // CALENDÁRIO
+                _menuCard(
+                  context,
+                  icon: Icons.calendar_month_rounded,
+                  title: 'Calendário',
+                  description: 'Organize os pedidos por data.',
+                  route: '/meu-calendario',
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -122,6 +141,8 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.all(22),
 
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+
             children: [
               Container(
                 padding: const EdgeInsets.all(18),
@@ -144,6 +165,9 @@ class HomeScreen extends StatelessWidget {
                     Text(
                       title,
 
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -156,8 +180,12 @@ class HomeScreen extends StatelessWidget {
                     Text(
                       description,
 
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+
                       style: TextStyle(
                         fontSize: 14,
+                        height: 1.3,
                         color: Colors.grey.shade700,
                       ),
                     ),
@@ -165,7 +193,13 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const Icon(Icons.arrow_forward_ios_rounded, color: roxo),
+              const SizedBox(width: 12),
+
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: roxo,
+                size: 18,
+              ),
             ],
           ),
         ),
