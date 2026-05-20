@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-
-// Providers
 import 'providers/pedido_provider.dart';
-
-// Screens
+import 'ui/screens/home_screen.dart';
 import 'ui/screens/cadastro_pedido_screen.dart';
 import 'ui/screens/entregas_diarias_screen.dart';
 import 'ui/screens/pecas_list_screen.dart';
@@ -15,49 +12,66 @@ void main() {
   runApp(const AtelieApp());
 }
 
-// Configuração de Rotas com GoRouter
 final GoRouter _router = GoRouter(
   initialLocation: '/',
+
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const HomeScreen(),
-    ),
+    // HOME
+    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+
+    // CADASTRO PEDIDO
     GoRoute(
       path: '/cadastro-pedido',
       builder: (context, state) => CadastroPedidoScreen(),
     ),
+
+    // ENTREGAS
     GoRoute(
       path: '/entregas-hoje',
       builder: (context, state) => const EntregasDiariasScreen(),
     ),
+
+    // PEÇAS
     GoRoute(
       path: '/pecas',
       builder: (context, state) => const PecasListScreen(),
     ),
-     GoRoute(
+    GoRoute(
       path: '/meu-calendario',
       builder: (context, state) => const CalendarioEventosPage(),
-     ),
+    ),
   ],
 );
+
+// =========================
+// APP
+// =========================
 
 class AtelieApp extends StatelessWidget {
   const AtelieApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const roxo = Color(0xFF4A148C);
+
     return MultiProvider(
-      providers: [
-        // Injeção do estado global. Adicione os próximos Providers aqui.
-        ChangeNotifierProvider(create: (_) => PedidoProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => PedidoProvider())],
+
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+
         title: 'Ateliê Automático',
+
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
           useMaterial3: true,
+
+          colorScheme: ColorScheme.fromSeed(seedColor: roxo),
+
+          scaffoldBackgroundColor: const Color(0xFFF4F2FF),
+
+          fontFamily: 'Roboto',
         ),
+
         routerConfig: _router,
       ),
     );
@@ -83,7 +97,10 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.add_circle_outline),
               label: const Text('Nova Encomenda'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
               onPressed: () => context.push('/cadastro-pedido'),
             ),
@@ -92,7 +109,10 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.list_alt),
               label: const Text('Entregas do Dia'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
               onPressed: () => context.push('/entregas-hoje'),
             ),
@@ -101,7 +121,10 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.checkroom),
               label: const Text('Todas as Peças'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
               onPressed: () => context.push('/pecas'),
             ),
@@ -110,7 +133,10 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.calendar_month),
               label: const Text('Calendario'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
               onPressed: () => context.push('/meu-calendario'),
             ),

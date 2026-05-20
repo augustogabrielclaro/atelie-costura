@@ -51,14 +51,12 @@ class CadastroPedidoScreen extends StatelessWidget {
   // CONVERTER VALOR
   // =========================
 
-  double converterValor(String valorFormatado) {
-    String valorLimpo = valorFormatado
-        .replaceAll('R\$', '')
-        .replaceAll('.', '')
-        .replaceAll(',', '.')
-        .trim();
+  double converterValor(String valor) {
+    if (valor.isEmpty) return 0;
 
-    return double.parse(valorLimpo);
+    String valorLimpo = valor.replaceAll('.', '').replaceAll(',', '.');
+
+    return double.tryParse(valorLimpo) ?? 0;
   }
 
   @override
@@ -198,8 +196,12 @@ class CadastroPedidoScreen extends StatelessWidget {
                       controller: _valorController,
                       label: 'Valor (R\$)',
                       icon: Icons.attach_money,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [_valorMask],
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                      ],
                     ),
 
                     const SizedBox(height: 18),
