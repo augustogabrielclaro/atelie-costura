@@ -1,18 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-// import 'package:intl/date_symbol_data_local.dart';
 import 'package:front_end/models/all_peca.dart';
 import 'package:table_calendar/table_calendar.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-  
-//   // Mudança aqui: inicializa explicitamente o pt_BR
-//   await initializeDateFormatting('pt_BR', 'null');
-  
-//   runApp(const CalendarioPedidoScreen());
-// }
 
 
 class CalendarioPedidoScreen extends StatelessWidget {
@@ -23,15 +13,7 @@ class CalendarioPedidoScreen extends StatelessWidget {
     return MaterialApp(
       title: ' Meu Calendario',
       theme: ThemeData(primarySwatch: Colors.blue),
-      // localizationsDelegates: const [
-      //   GlobalMaterialLocalizations.delegate,
-      //   GlobalWidgetsLocalizations.delegate,
-      //   GlobalCupertinoLocalizations.delegate,
-      // ],
-      // supportedLocales: const [
-      //   Locale('pt', 'BR'), // Define o Português do Brasil
-      // ],
-
+     
       home: const CalendarioEventosPage(),
     );
   }
@@ -49,7 +31,7 @@ class _StartPageState extends State<CalendarioEventosPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  List<AllPeca> eventosDoDia = []; // Lista que vai guardar as peças/eventos
+  List<AllPeca> eventosDoDia = [];
   bool isLoading = false;
   Map<DateTime, List<AllPeca>> eventosMapeados = {};
 
@@ -59,7 +41,7 @@ class _StartPageState extends State<CalendarioEventosPage> {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    // Busca TODOS os eventos ao abrir a tela
+  
     _buscarTodosOsEventos();
   }
 
@@ -75,7 +57,7 @@ class _StartPageState extends State<CalendarioEventosPage> {
     });
 
     try {
-      // Usando a rota que retorna todas as peças (baseado no seu PecaService)
+    
       final response = await _dio.get('/pecas/all');
 
       List<AllPeca> todasAsPecas = (response.data as List)
@@ -119,7 +101,7 @@ class _StartPageState extends State<CalendarioEventosPage> {
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
-            // locale: 'pt_BR',
+            locale: 'pt_BR',
 
             calendarStyle: const CalendarStyle(
               markerDecoration: BoxDecoration(

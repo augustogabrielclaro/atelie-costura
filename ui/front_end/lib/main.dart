@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'providers/pedido_provider.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/cadastro_pedido_screen.dart';
@@ -8,7 +10,9 @@ import 'ui/screens/entregas_diarias_screen.dart';
 import 'ui/screens/pecas_list_screen.dart';
 import 'ui/screens/calendario_pedido_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('pt_BR');
   runApp(const AtelieApp());
 }
 
@@ -71,6 +75,16 @@ class AtelieApp extends StatelessWidget {
 
           fontFamily: 'Roboto',
         ),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('pt', 'BR'),
+          Locale('en', 'US'),
+        ],
+        locale: const Locale('pt', 'BR'),
 
         routerConfig: _router,
       ),
