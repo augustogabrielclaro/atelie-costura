@@ -39,7 +39,7 @@ class PedidoProvider extends ChangeNotifier {
     } else {
       isNomeBloqueado = false;
       clienteEncontrado = null;
-      notifyListeners(); // Avisa a tela se o cara apagar um número
+      notifyListeners();
     }
   } 
 
