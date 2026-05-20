@@ -9,6 +9,7 @@ import 'providers/pedido_provider.dart';
 import 'ui/screens/cadastro_pedido_screen.dart';
 import 'ui/screens/entregas_diarias_screen.dart';
 import 'ui/screens/pecas_list_screen.dart';
+import 'ui/screens/calendario_pedido_screen.dart';
 
 void main() {
   runApp(const AtelieApp());
@@ -34,6 +35,10 @@ final GoRouter _router = GoRouter(
       path: '/pecas',
       builder: (context, state) => const PecasListScreen(),
     ),
+     GoRoute(
+      path: '/meu-calendario',
+      builder: (context, state) => const CalendarioEventosPage(),
+     ),
   ],
 );
 
@@ -99,6 +104,15 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               ),
               onPressed: () => context.push('/pecas'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.calendar_month),
+              label: const Text('Calendario'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
+              onPressed: () => context.push('/meu-calendario'),
             ),
           ],
         ),
