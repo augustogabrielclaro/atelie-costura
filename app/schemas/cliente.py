@@ -14,3 +14,4 @@ class ClienteOut(BaseModel):
     telefone: str
     data_cadastro: datetime.datetime
     ativo: bool
+

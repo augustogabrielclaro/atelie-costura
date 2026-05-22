@@ -58,9 +58,8 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 40),    
 
-                // NOVA ENCOMENDA
                 _menuCard(
                   context,
                   icon: Icons.add_box_rounded,
@@ -90,6 +89,15 @@ class HomeScreen extends StatelessWidget {
                   title: 'Todas as Peças',
                   description: 'Veja todas as peças cadastradas.',
                   route: '/pecas',
+                ),
+
+                //CLIENTESS
+                _menuCard(
+                  context,
+                  icon: Icons.account_box,
+                  title: 'Clientes',
+                  description: 'Consulta novos Pedidos.',
+                  route: '/clientes',
                 ),
 
                 const SizedBox(height: 22),

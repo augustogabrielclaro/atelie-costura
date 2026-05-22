@@ -43,7 +43,10 @@ class ClienteService:
         update_data = cliente_in.model_dump(exclude_unset=True)
 
         if "telefone" in update_data:
-            if self.repository.get_by_telefone(self.limpar_telefone(update_data["telefone"])) != None:
+            telefone_limpo = self.limpar_telefone(update_data["telefone"])
+            cliente_existente = self.repository.get_by_telefone(telefone_limpo)  
+
+            if cliente_existente is not None and cliente_existente.id != id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Já existe um cliente ativo com esse telefone!"

@@ -3,6 +3,7 @@ from models.cliente import Cliente
 from uuid import UUID
 from schemas.cliente import ClienteIn
 
+
 class ClienteRepository:
     def __init__(self, session: Session):
         self.session = session
@@ -24,6 +25,16 @@ class ClienteRepository:
 
     def get_by_id(self, cliente_id: UUID) -> Cliente:
         return self.session.get(Cliente, cliente_id)
+    
+    def get_all(self) -> list[Cliente]:
+        statement = select(Cliente)
+        cliente_list = self.session.exec(statement).all()
+        return cliente_list
+    
+    def get_all_ativos(self) -> list[Cliente]:
+        statement = select(Cliente).where(Cliente.ativo == True)
+        cliente_list = self.session.exec(statement).all()
+        return cliente_list
     
     def deactivate(self, cliente_id: UUID) -> bool:
         cliente = self.session.get(Cliente, cliente_id)

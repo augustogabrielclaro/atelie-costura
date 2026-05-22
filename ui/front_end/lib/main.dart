@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:front_end/ui/screens/clientes_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -39,6 +40,11 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/pecas',
       builder: (context, state) => const PecasListScreen(),
+    ),
+    
+    GoRoute(
+      path: '/clientes',
+      builder: (context, state) => ClientesScreen(),
     ),
 
     GoRoute(
