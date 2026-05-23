@@ -1,6 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlmodel import Session
 import uuid
+import os
+import json
+
+from fastapi import FastAPI, Depends, HTTPException, Query, Response, Request
+from sqlmodel import Session
 from typing import List
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,8 +18,12 @@ from repositories.notificacao_repository import NotificacaoRepository
 from services.cliente_service import ClienteService
 from services.peca_service import PecaService
 from services.notificacao_service import NotificacaoService
+from services.whatsapp_service import WhatsappService
 from schemas.pedido import PedidoCompletoIn, PecaOut, AllPecasOut
 from schemas.notificacao import *
+from schemas.whatsapp import MessageRequest
+
+VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -45,6 +52,8 @@ def get_peca_service(session: Session = Depends(get_session), cliente_service: C
 def get_notificacao_service(session: Session = Depends(get_session)) -> NotificacaoService:
     repo = NotificacaoRepository(session)
     return NotificacaoService(repo)
+
+whatsapp_service = WhatsappService()
 
 # --- ENDPOINTS ---
 
@@ -136,3 +145,85 @@ def editar_cliente(
     Edita os dados do cliente. O telefone é limpo e validado durante o processamento.
     """
     return cliente_service.patch_cliente(uuid.UUID(cliente_id), cliente_in)
+
+# --- WEBHOOK ---
+
+@app.post("/api/whatsapp/send")
+def send_message(payload: MessageRequest):
+    """
+    Envia a mensagem de texto para um número do WhatsApp.
+    """
+
+    result = whatsapp_service.send_text_message(payload.to_phone, payload.text)
+    
+    if "error" in result:
+        mensagem_erro = result["error"].get("message", "Erro desconhecido na Meta")
+        raise HTTPException(status_code=400, detail=f"Falha no envio: {mensagem_erro}")
+        
+    return {"status": "sucesso", "meta_response": result}
+
+@app.get("/api/whatsapp/webhook")
+def verify_webhook(
+    hub_mode: str = Query(None, alias="hub.mode"),
+    hub_challenge: str = Query(None, alias="hub.challenge"),
+    hub_verify_token: str = Query(None, alias="hub.verify_token")
+):
+    """
+    Endpoint de verificação da Meta
+
+    Necessário apenas durante a configuração inicial no painel de desenvolvedores da Meta.
+    A Meta faz uma requisição GET para validar se a URL pertence a você.
+    """
+
+    if hub_mode != "subscribe" or hub_verify_token != VERIFY_TOKEN:
+        raise HTTPException(status_code=403, detail="Token inválido")
+    
+    return Response(content=str(hub_challenge), media_type="text/plain")
+
+@app.post("/api/whatsapp/webhook")
+async def receive_webhook(request: Request):
+    """
+    Recebe os eventos disparados pelo WhatsApp.
+
+    Captura dois tipos de eventos:
+    **Novas Mensagens**
+    **Atualizações de Status**
+    """
+    
+    data = await request.json()
+
+    try:
+        entries = data.get("entry", [])
+        for entry in entries:
+            changes = entry.get("changes", [])
+            for change in changes:
+                value = change.get("value", {})
+                
+                messages = value.get("messages", [])
+                for message in messages:
+                    if message.get("type") == "text":
+                        texto = message.get("text", {}).get("body", "")
+                        numero_origem = message.get("from", "Desconhecido")
+                        print(f"[RECEBIDO] Mensagem de {numero_origem}: {texto}")
+
+                statuses = value.get("statuses", [])
+                for status in statuses:
+                    status_atual = status.get("status")
+                    destinatario = status.get("recipient_id")
+                    
+                    if status_atual == "failed":
+                        print(f"[FALHA NO ENVIO] Para: {destinatario}")
+                        errors = status.get("errors", [])
+                        for error in errors:
+                            error_data = error.get("error_data", {})
+                            details = error_data.get("details", "Sem detalhes")
+                            codigo = error.get("code", "N/A")
+                            motivo = error.get("title", "Desconhecido")
+                            print(f"    -> Código: {codigo} | Motivo: {motivo} | Detalhes: {details}")
+                    else:
+                        print(f"[STATUS ATUALIZADO] Para: {destinatario} | Status da mensagem: {status_atual}")
+                        
+    except Exception as e:
+        print(f"Erro ao processar webhook: {e}")
+        
+    return Response(content="EVENT_RECEIVED", status_code=200)
