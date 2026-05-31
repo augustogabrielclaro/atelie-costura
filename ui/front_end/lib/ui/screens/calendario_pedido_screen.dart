@@ -79,7 +79,7 @@ class _StartPageState extends State<CalendarioEventosPage> {
 
       setState(() {
         eventosMapeados = mapaTemporario;
-        // Já carrega os eventos do dia atual caso existam
+
         eventosDoDia = eventosMapeados[_normalizarData(_focusedDay)] ?? [];
         isLoading = false;
       });
@@ -163,7 +163,6 @@ class _StartPageState extends State<CalendarioEventosPage> {
 
           const SizedBox(height: 20),
 
-          // Lista de eventos (placeholder)
           Expanded(child: _construirListaDeEventos()),
         ],
       ),
@@ -175,12 +174,11 @@ class _StartPageState extends State<CalendarioEventosPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // 3. Se o Python respondeu, mas a lista veio vazia
     if (eventosDoDia.isEmpty) {
       return const Center(child: Text('Nenhum evento encontrado.'));
     }
 
-    // 4. Se deu tudo certo e temos dados!
+
     return ListView.builder(
       itemCount: eventosDoDia.length,
       itemBuilder: (context, index) {

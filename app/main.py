@@ -113,6 +113,10 @@ def registrar_notificacao_enviada(
     except Exception as e:
         raise HTTPException(status_code=429, detail=str(e))
 
+@app.get("/clientes", tags=["Busca"], response_model=List[ClienteOut])
+def listar_todos_clientes(cliente_service: ClienteService = Depends(get_cliente_service)):
+    return cliente_service.repository.get_all_ativos()
+
 @app.get("/clientes/buscar", tags=["Busca"])
 def buscar_cliente_por_telefone(telefone: str, cliente_service: ClienteService = Depends(get_cliente_service)):
     """
