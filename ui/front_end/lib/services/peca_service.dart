@@ -40,7 +40,12 @@ class PecaService {
     return (response.data as List).map((p) => AllPeca.fromJson(p)).toList();
   }
 
-  Future<void> notificarCliente(String clienteId, String pecaId, String telefone) async {
-    await _dio.post('/notificar/$clienteId/$pecaId', queryParameters: {'telefone': telefone});
+  Future<void> notificarCliente(String clienteId, String pecaId) async {
+    await _dio.post(
+      '/notificar/enviar/',
+      data: {
+        'cliente_id': clienteId,
+        'peca_id': pecaId,
+      });
   }
 }

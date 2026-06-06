@@ -15,13 +15,15 @@ from contextlib import asynccontextmanager
 from repositories.cliente_repository import ClienteRepository
 from repositories.peca_repository import PecaRepository
 from repositories.notificacao_repository import NotificacaoRepository
+from repositories.configuracao_whatsapp_repository import ConfiguracaoWhatsappRepository
 from services.cliente_service import ClienteService
 from services.peca_service import PecaService
 from services.notificacao_service import NotificacaoService
 from services.whatsapp_service import WhatsappService
+from services.configuracao_whatsapp_service import ConfiguracaoWhatsappService
 from schemas.pedido import PedidoCompletoIn, PecaOut, AllPecasOut
 from schemas.notificacao import *
-from schemas.whatsapp import MessageRequest
+from schemas.whatsapp import *
 
 VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN")
 
@@ -49,11 +51,16 @@ def get_peca_service(session: Session = Depends(get_session), cliente_service: C
     repo = PecaRepository(session)
     return PecaService(repo, cliente_service)
 
-def get_notificacao_service(session: Session = Depends(get_session)) -> NotificacaoService:
-    repo = NotificacaoRepository(session)
-    return NotificacaoService(repo)
+def get_configuracao_whatsapp_service(session: Session = Depends(get_session)) -> ConfiguracaoWhatsappService:
+    repo = ConfiguracaoWhatsappRepository(session)
+    return ConfiguracaoWhatsappService(repo)
 
-whatsapp_service = WhatsappService()
+def get_whatsapp_service(config_service: ConfiguracaoWhatsappService = Depends(get_configuracao_whatsapp_service)) -> WhatsappService:
+    return WhatsappService(config_service)
+
+def get_notificacao_service(session: Session = Depends(get_session), whatsapp_service: WhatsappService = Depends(get_whatsapp_service)) -> NotificacaoService:
+    repo = NotificacaoRepository(session)
+    return NotificacaoService(repo, whatsapp_service)
 
 # --- ENDPOINTS ---
 
@@ -150,10 +157,62 @@ def editar_cliente(
     """
     return cliente_service.patch_cliente(uuid.UUID(cliente_id), cliente_in)
 
+@app.post("/configuracao/whatsapp", tags=["Configuração"], response_model=ConfiguracaoWhatsappResponse)
+def configurar_whatsapp(
+    dados: ConfiguracaoWhatsappCreate,
+    configuracao_service: ConfiguracaoWhatsappService = Depends(get_configuracao_whatsapp_service)
+):
+    try:
+        config = configuracao_service.configurar_envio(
+            telefone_envio=dados.telefone_envio,
+            token=dados.access_token,
+            waba_id=dados.waba_id
+        )
+        
+        return ConfiguracaoWhatsappResponse(
+            telefone_envio=config.telefone_envio,
+            waba_id=config.waba_id,
+            possui_token=True
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/configuracao/whatsapp", tags=["Configuração"], response_model=ConfiguracaoWhatsappResponse)
+def obter_configuracao_whatsapp(configuracao_service: ConfiguracaoWhatsappService = Depends(get_configuracao_whatsapp_service)):
+    config = configuracao_service.obter_configuracao_publica()
+    
+    if not config:
+        raise HTTPException(status_code=404, detail="Configuração do WhatsApp não encontrada")
+    
+    return ConfiguracaoWhatsappResponse(
+        telefone_envio=config.telefone_envio,
+        waba_id=config.waba_id,
+        possui_token=True
+    )
+
+@app.put("/configuracao/whatsapp", tags=["Configuração"])
+def atualizar_configuracao(
+    dados: ConfiguracaoWhatsappUpdate,
+    configuracao_service: ConfiguracaoWhatsappService = Depends(get_configuracao_whatsapp_service)
+):
+    try:
+        configuracao_service.configurar_envio(
+            telefone_envio=dados.telefone_envio,
+            waba_id=dados.waba_id,
+            token=dados.access_token 
+        )
+
+        return {"mensagem": "Configuração atualizada com sucesso"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 # --- WEBHOOK ---
 
-@app.post("/api/whatsapp/send")
-def send_message(payload: MessageRequest):
+@app.post("/api/whatsapp/send", tags=["WhatsApp"])
+def send_message(
+    payload: MessageRequest,
+    whatsapp_service: WhatsappService = Depends(get_whatsapp_service)
+):
     """
     Envia a mensagem de texto para um número do WhatsApp.
     """
@@ -166,7 +225,7 @@ def send_message(payload: MessageRequest):
         
     return {"status": "sucesso", "meta_response": result}
 
-@app.get("/api/whatsapp/webhook")
+@app.get("/api/whatsapp/webhook", tags=["WhatsApp"])
 def verify_webhook(
     hub_mode: str = Query(None, alias="hub.mode"),
     hub_challenge: str = Query(None, alias="hub.challenge"),
@@ -184,7 +243,7 @@ def verify_webhook(
     
     return Response(content=str(hub_challenge), media_type="text/plain")
 
-@app.post("/api/whatsapp/webhook")
+@app.post("/api/whatsapp/webhook", tags=["WhatsApp"])
 async def receive_webhook(request: Request):
     """
     Recebe os eventos disparados pelo WhatsApp.

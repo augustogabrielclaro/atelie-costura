@@ -2,10 +2,12 @@ from datetime import datetime
 from repositories.notificacao_repository import NotificacaoRepository
 from models.notificacao import Notificacao
 from uuid import UUID
+from services.whatsapp_service import WhatsappService
 
 class NotificacaoService:
-    def __init__(self, repo_notificacao: NotificacaoRepository):
+    def __init__(self, repo_notificacao: NotificacaoRepository, whatsapp_service: WhatsappService):
         self.repo_notificacao = repo_notificacao
+        self.whatsapp_service = whatsapp_service
 
     def pode_notificar(self, cliente_id: UUID) -> bool:
         ultima = self.repo_notificacao.get_ultima_por_cliente(cliente_id)
@@ -20,12 +22,26 @@ class NotificacaoService:
             raise Exception("Aguarde 5 minutos para notificar este cliente novamente.")
 
         print(f"Enviando Zap para {telefone}...")
+
+        mensagem = "Olá! Sua peça já está pronta e disponível no ateliê."
+
+        resultado = self.whatsapp_service.send_text_message(
+            telefone,
+            mensagem
+        )
+
+        status_envio = 'sucesso'
+
+        if 'error' in resultado:
+            status_envio = "erro"
+
         
         log = Notificacao(
             cliente_id=cliente_id,
             peca_id=peca_id,
-            mensagem="Sua peça está pronta!",
-            status="sucesso"
+            mensagem=mensagem,
+            status=status_envio
         )
         notificacao = self.repo_notificacao.create(log)
+
         return notificacao

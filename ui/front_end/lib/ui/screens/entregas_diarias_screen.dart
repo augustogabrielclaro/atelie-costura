@@ -67,7 +67,7 @@ class _EntregasDiariasScreenState extends State<EntregasDiariasScreen> {
 
   Future<void> _dispararAviso(Peca peca) async {
     try {
-      await _service.notificarCliente(peca.clienteId, peca.id, "5544999999999");
+      await _service.notificarCliente(peca.clienteId, peca.id);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
