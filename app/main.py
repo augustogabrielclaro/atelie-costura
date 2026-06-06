@@ -51,16 +51,16 @@ def get_peca_service(session: Session = Depends(get_session), cliente_service: C
     repo = PecaRepository(session)
     return PecaService(repo, cliente_service)
 
-def get_notificacao_service(session: Session = Depends(get_session)) -> NotificacaoService:
-    repo = NotificacaoRepository(session)
-    return NotificacaoService(repo)
-
 def get_configuracao_whatsapp_service(session: Session = Depends(get_session)) -> ConfiguracaoWhatsappService:
     repo = ConfiguracaoWhatsappRepository(session)
     return ConfiguracaoWhatsappService(repo)
 
 def get_whatsapp_service(config_service: ConfiguracaoWhatsappService = Depends(get_configuracao_whatsapp_service)) -> WhatsappService:
     return WhatsappService(config_service)
+
+def get_notificacao_service(session: Session = Depends(get_session), whatsapp_service: WhatsappService = Depends(get_whatsapp_service)) -> NotificacaoService:
+    repo = NotificacaoRepository(session)
+    return NotificacaoService(repo, whatsapp_service)
 
 # --- ENDPOINTS ---
 
