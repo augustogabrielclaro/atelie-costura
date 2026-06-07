@@ -13,7 +13,7 @@ class ConfiguracaoWhatsapp(SQLModel, table=True):
         default_factory=uuid.uuid4,
         nullable=False
     )
-    telefone_envio: str = Field(max_length=20)
+    telefone_id: str = Field(max_length=20)
     waba_id: Optional[str] = Field(default=None, max_length=50)
     acess_token: bytes
     data_criacao: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

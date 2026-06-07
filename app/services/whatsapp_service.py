@@ -15,8 +15,8 @@ class WhatsappService:
         if not credenciais:
             return {"error": {"message": "Credenciais do WhatsApp não configuradas no sistema."}}
 
+        telefone_id = credenciais["telefone_id"]
         token = credenciais["access_token"]
-        telefone_id = credenciais["waba_id"]
 
         url = f"https://graph.facebook.com/v25.0/{telefone_id}/messages"
         headers = {
