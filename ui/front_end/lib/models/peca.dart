@@ -5,10 +5,18 @@ class Peca {
   final String dataEntrega;
   final String clienteId;
   final String status;
+  final String? clienteNome;
+  final String? clienteTelefone;
 
   Peca({
-    required this.id, required this.descricao, required this.valor,
-    required this.dataEntrega, required this.clienteId, required this.status
+    required this.id,
+    required this.descricao,
+    required this.valor,
+    required this.dataEntrega,
+    required this.clienteId,
+    required this.status,
+    this.clienteNome,
+    this.clienteTelefone,
   });
 
   factory Peca.fromJson(Map<String, dynamic> json) {
@@ -19,6 +27,8 @@ class Peca {
       dataEntrega: json['data_entrega'],
       clienteId: json['cliente_id'],
       status: json['status'],
+      clienteNome: json['cliente_nome'],
+      clienteTelefone: json['cliente_telefone'],
     );
   }
 }

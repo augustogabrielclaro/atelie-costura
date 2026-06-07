@@ -93,7 +93,7 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                 ),
 
-                const SizedBox(height: 40),    
+                const SizedBox(height: 40),
 
                 _menuCard(
                   context,
@@ -131,7 +131,7 @@ class HomeScreen extends StatelessWidget {
                   context,
                   icon: Icons.account_box,
                   title: 'Clientes',
-                  description: 'Consulta novos Pedidos.',
+                  description: 'Consulta de clientes',
                   route: '/clientes',
                 ),
 
