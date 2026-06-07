@@ -254,6 +254,44 @@ class _EntregasDiariasScreenState extends State<EntregasDiariasScreen> {
                       ],
                     ),
 
+                    if (peca.clienteNome != null && peca.clienteNome!.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(Icons.person, color: roxo, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              peca.clienteNome!,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
+                    if (peca.clienteTelefone != null && peca.clienteTelefone!.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone, color: roxo, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              peca.clienteTelefone!,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
                     const SizedBox(height: 24),
 
                     // =========================

@@ -49,7 +49,7 @@ final GoRouter _router = GoRouter(
 
     GoRoute(
       path: '/meu-calendario',
-      builder: (context, state) => const CalendarioEventosPage(),
+      builder: (context, state) => const CalendarioPedidoScreen(),
     ),
   ],
 );

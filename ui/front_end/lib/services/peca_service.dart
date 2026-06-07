@@ -31,7 +31,8 @@ class PecaService {
   }
 
   Future<List<Peca>> listarEntregasHoje() async {
-    final response = await _dio.get('/entregas/hoje');
+    final hojeStr = DateTime.now().toLocal().toString().split(' ')[0];
+    final response = await _dio.get('/entregas/hoje', queryParameters: {'data_alvo': hojeStr});
     return (response.data as List).map((p) => Peca.fromJson(p)).toList();
   }
 

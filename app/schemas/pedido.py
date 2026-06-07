@@ -17,6 +17,8 @@ class PecaOut(BaseModel):
     valor: float
     data_entrega: date
     cliente_id: UUID
+    cliente_nome: Optional[str] = None
+    cliente_telefone: Optional[str] = None
 
 class AllPecasOut(BaseModel):
     descricao: str
