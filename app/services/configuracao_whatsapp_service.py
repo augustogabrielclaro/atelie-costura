@@ -14,15 +14,15 @@ class ConfiguracaoWhatsappService:
             
         self.fernet = Fernet(chave_secreta.encode())
 
-    def configurar_envio(self, telefone_envio: str = None, token: str = None, waba_id: str = None) -> ConfiguracaoWhatsapp:
+    def configurar_envio(self, telefone_id: str = None, token: str = None, waba_id: str = None) -> ConfiguracaoWhatsapp:
         """
         Atualiza a configuração existente ou cria uma nova se for a primeira vez.
         """
         config = self.repository.get()
         
         if config:
-            if telefone_envio:
-                config.telefone_envio = telefone_envio
+            if telefone_id:
+                config.telefone_id = telefone_id
             if waba_id is not None:
                 config.waba_id = waba_id
             if token:
@@ -30,11 +30,11 @@ class ConfiguracaoWhatsappService:
                 
             config.data_atualizacao = datetime.now(timezone.utc)
         else:
-            if not telefone_envio or not token:
-                raise ValueError("Telefone e token são obrigatórios no primeiro cadastro.")
+            if not telefone_id or not token:
+                raise ValueError("Id do telefone e token são obrigatórios no primeiro cadastro.")
                 
             config = ConfiguracaoWhatsapp(
-                telefone_envio=telefone_envio,
+                telefone_id=telefone_id,
                 waba_id=waba_id,
                 acess_token=self.fernet.encrypt(token.encode())
             )
@@ -62,7 +62,7 @@ class ConfiguracaoWhatsappService:
         token_descriptografado = self.fernet.decrypt(config.acess_token).decode()
         
         return {
-            "telefone_envio": config.telefone_envio,
+            "telefone_id": config.telefone_id,
             "waba_id": config.waba_id,
             "access_token": token_descriptografado
         }

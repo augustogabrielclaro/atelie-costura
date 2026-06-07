@@ -6,16 +6,16 @@ class MessageRequest(BaseModel):
     text: str
 
 class ConfiguracaoWhatsappCreate(BaseModel):
-    telefone_envio: str
+    telefone_id: str
     waba_id: str | None = None
-    access_token: str
+    token: str
 
 class ConfiguracaoWhatsappUpdate(BaseModel):
-    telefone_envio: str | None = None
+    telefone_id: str | None = None
     waba_id: str | None = None
-    access_token: str | None = None
+    token: str | None = None
 
 class ConfiguracaoWhatsappResponse(BaseModel):
-    telefone_envio: str
+    telefone_id: str
     waba_id: str | None = None
     possui_token: bool

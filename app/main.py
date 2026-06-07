@@ -164,13 +164,13 @@ def configurar_whatsapp(
 ):
     try:
         config = configuracao_service.configurar_envio(
-            telefone_envio=dados.telefone_envio,
-            token=dados.access_token,
+            telefone_id=dados.telefone_id,
+            token=dados.token,
             waba_id=dados.waba_id
         )
         
         return ConfiguracaoWhatsappResponse(
-            telefone_envio=config.telefone_envio,
+            telefone_id=config.telefone_id,
             waba_id=config.waba_id,
             possui_token=True
         )
@@ -185,7 +185,7 @@ def obter_configuracao_whatsapp(configuracao_service: ConfiguracaoWhatsappServic
         raise HTTPException(status_code=404, detail="Configuração do WhatsApp não encontrada")
     
     return ConfiguracaoWhatsappResponse(
-        telefone_envio=config.telefone_envio,
+        telefone_id=config.telefone_id,
         waba_id=config.waba_id,
         possui_token=True
     )
@@ -197,9 +197,9 @@ def atualizar_configuracao(
 ):
     try:
         configuracao_service.configurar_envio(
-            telefone_envio=dados.telefone_envio,
+            telefone_id=dados.telefone_id,
             waba_id=dados.waba_id,
-            token=dados.access_token 
+            token=dados.token 
         )
 
         return {"mensagem": "Configuração atualizada com sucesso"}
