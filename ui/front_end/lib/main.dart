@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:front_end/providers/whatsapp_provider.dart';
+import 'package:front_end/services/configuracao_whatsapp_service.dart';
 import 'package:front_end/ui/screens/clientes_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,7 @@ import 'ui/screens/cadastro_pedido_screen.dart';
 import 'ui/screens/entregas_diarias_screen.dart';
 import 'ui/screens/pecas_list_screen.dart';
 import 'ui/screens/calendario_pedido_screen.dart';
+import 'ui/screens/configuracao_whatsapp_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +54,11 @@ final GoRouter _router = GoRouter(
       path: '/meu-calendario',
       builder: (context, state) => const CalendarioEventosPage(),
     ),
+
+    GoRoute(
+      path: '/configuracao-whatsapp',
+      builder: (context, state) => const ConfiguracaoWhatsappScreen(),
+    ),
   ],
 );
 
@@ -62,7 +70,10 @@ class AtelieApp extends StatelessWidget {
     const roxo = Color(0xFF4A148C);
 
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => PedidoProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => PedidoProvider()), 
+        ChangeNotifierProvider(create: (_) => WhatsappProvider(ConfiguracaoWhatsappService()))
+      ],
 
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

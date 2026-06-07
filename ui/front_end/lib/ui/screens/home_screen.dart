@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F2FF),
-
+      
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
@@ -20,6 +20,41 @@ class HomeScreen extends StatelessWidget {
         title: const Text(
           'Painel do Ateliê',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(color: roxo),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: const [
+                  Icon(Icons.checkroom, color: verdeAgua, size: 40),
+                  SizedBox(height: 12),
+                  Text(
+                    'Ateliê Menu',
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings, color: roxoEscuro),
+              title: const Text(
+                'Configuração do WhatsApp',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/configuracao-whatsapp');
+              },
+            ),
+          ],
         ),
       ),
 
