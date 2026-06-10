@@ -36,8 +36,12 @@ class PecaService {
     return (response.data as List).map((p) => Peca.fromJson(p)).toList();
   }
 
-  Future<List<AllPeca>> listarTodasPecas() async {
-    final response = await _dio.get('/pecas/all');
+  Future<List<AllPeca>> listarTodasPecas({int skip = 0, int limit = 10, String search = ''}) async {
+    final response = await _dio.get('/pecas/all', queryParameters: {
+      'skip': skip,
+      'limit': limit,
+      'search': search,
+    });
     return (response.data as List).map((p) => AllPeca.fromJson(p)).toList();
   }
 

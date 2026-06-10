@@ -48,11 +48,12 @@ class PecaService:
             ))
         return res
     
-    def listar_todas_pecas(self) -> List[AllPecasOut]:
-        pecas = self.peca_repo.get_all()
+    def listar_todas_pecas(self, skip: int = 0, limit: int = 10, search: str = "") -> List[AllPecasOut]:
+        resultados = self.peca_repo.get_all_paginated(skip=skip, limit=limit, search=search)
+        
         return [AllPecasOut(
             descricao=peca.descricao,
             valor=peca.valor,
             data_entrega=peca.data_entrega,
-            cliente_nome=self.cliente_service.repository.get_by_id(peca.cliente_id).nome
-        ) for peca in pecas]
+            cliente_nome=cliente_nome
+        ) for peca, cliente_nome in resultados]

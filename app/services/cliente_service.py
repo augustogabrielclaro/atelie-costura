@@ -54,3 +54,6 @@ class ClienteService:
             update_data["telefone"] = self.limpar_telefone(update_data["telefone"])
 
         return self.repository.patch(cliente, update_data)
+    
+    def listar_clientes_ativos(self, skip: int = 0, limit: int = 10, search: str = "") -> list[Cliente]:
+        return self.repository.get_all_ativos_paginated(skip=skip, limit=limit, search=search)
