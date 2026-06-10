@@ -124,6 +124,11 @@ class _CalendarioPedidoScreenState extends State<CalendarioPedidoScreen> {
                 focusedDay: _focusedDay,
                 calendarFormat: _calendarFormat,
                 locale: 'pt_BR',
+                availableCalendarFormats: const {
+                  CalendarFormat.month: 'Mês',
+                  CalendarFormat.twoWeeks: '2 Semanas',
+                  CalendarFormat.week: 'Semana',
+                },
                 headerStyle: const HeaderStyle(
                   formatButtonVisible: true,
                   titleCentered: true,
