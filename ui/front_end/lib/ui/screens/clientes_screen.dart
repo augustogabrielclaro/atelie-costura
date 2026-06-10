@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../models/cliente.dart';
 import '../../services/cliente_service.dart';
@@ -11,20 +12,25 @@ class ClientesScreen extends StatefulWidget {
 
 class _ClientesScreenState extends State<ClientesScreen> {
   final ClienteService _service = ClienteService();
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   List<Cliente> _clientes = [];
 
   bool _loading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
   String? _erro;
 
-  String? _editandoId; // Guarda o ID do cliente que está sendo editado
+  int _skip = 0;
+  final int _limit = 10;
+  String _searchQuery = '';
+
+  String? _editandoId;
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   bool _salvando = false;
-
-  // =========================
-  // CORES
-  // =========================
 
   static const roxo = Color(0xFF4A148C);
   static const roxoEscuro = Color(0xFF2A0A4A);
@@ -33,28 +39,60 @@ class _ClientesScreenState extends State<ClientesScreen> {
   @override
   void initState() {
     super.initState();
-    _carregar();
+    _carregarInicial();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100) {
+        _carregarMais();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    _debounce?.cancel();
     _nomeController.dispose();
     _telefoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _carregar() async {
+  // =========================
+  // LOGICA DE BUSCA
+  // =========================
+  void _onSearchChanged(String value) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (_searchQuery != value) {
+        setState(() {
+          _searchQuery = value;
+        });
+        _carregarInicial();
+      }
+    });
+  }
+
+  // =========================
+  // CARREGAR DADOS
+  // =========================
+
+  Future<void> _carregarInicial() async {
     setState(() {
       _loading = true;
       _erro = null;
+      _skip = 0;
+      _hasMore = true;
+      _clientes.clear();
+      _editandoId = null; // Reseta a edição caso esteja buscando
     });
 
     try {
-      final dados = await _service.listarTodosClientes();
-
+      final dados = await _service.listarTodosClientes(skip: _skip, limit: _limit, search: _searchQuery);
       setState(() {
         _clientes = dados;
         _loading = false;
+        if (dados.length < _limit) _hasMore = false;
       });
     } catch (e) {
       setState(() {
@@ -64,6 +102,33 @@ class _ClientesScreenState extends State<ClientesScreen> {
     }
   }
 
+  Future<void> _carregarMais() async {
+    if (_isLoadingMore || !_hasMore || _loading) return;
+
+    setState(() {
+      _isLoadingMore = true;
+      _skip += _limit;
+    });
+
+    try {
+      final novosDados = await _service.listarTodosClientes(skip: _skip, limit: _limit, search: _searchQuery);
+      setState(() {
+        if (novosDados.length < _limit) {
+          _hasMore = false;
+        }
+        _clientes.addAll(novosDados);
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  // =========================
+  // EDIÇÃO
+  // =========================
   void _iniciarEdicao(Cliente cliente) {
     setState(() {
       _editandoId = cliente.id;
@@ -98,12 +163,14 @@ class _ClientesScreenState extends State<ClientesScreen> {
           ),
         );
       }
-    setState(() {
+      
+      setState(() {
         _salvando = false;
-        _editandoId = null; 
+        _editandoId = null;
       });
 
-      _carregar();
+      // Recarrega do zero para garantir que a lista fique sincronizada com a API
+      _carregarInicial();
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,22 +185,23 @@ class _ClientesScreenState extends State<ClientesScreen> {
     }
   }
 
+  // =========================
+  // BUILD
+  // =========================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F2FF),
-
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
         backgroundColor: roxo,
-
         title: const Text(
           'Clientes',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
-
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -142,8 +210,36 @@ class _ClientesScreenState extends State<ClientesScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
+        child: Column(
+          children: [
+            _buildSearchBar(),
+            Expanded(child: _buildBody()),
+          ],
+        ),
+      ),
+    );
+  }
 
-        child: _buildBody(),
+  // =========================
+  // SEARCH BAR
+  // =========================
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: TextField(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        decoration: InputDecoration(
+          hintText: 'Buscar por nome ou telefone...',
+          prefixIcon: const Icon(Icons.search, color: roxo),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+        ),
       ),
     );
   }
@@ -153,11 +249,10 @@ class _ClientesScreenState extends State<ClientesScreen> {
   // =========================
 
   Widget _buildBody() {
-
     if (_loading) {
       return const Center(child: CircularProgressIndicator(color: verdeAgua));
     }
-    // ERRO
+
     if (_erro != null) {
       return Center(
         child: Padding(
@@ -173,26 +268,19 @@ class _ClientesScreenState extends State<ClientesScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.error_outline, color: Colors.red, size: 60),
-
                   const SizedBox(height: 16),
-
                   Text(
                     _erro!,
                     textAlign: TextAlign.center,
-
                     style: const TextStyle(fontSize: 16),
                   ),
-
                   const SizedBox(height: 20),
-
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: roxo,
                       foregroundColor: Colors.white,
                     ),
-
-                    onPressed: _carregar,
-
+                    onPressed: _carregarInicial,
                     child: const Text('Tentar Novamente'),
                   ),
                 ],
@@ -206,19 +294,16 @@ class _ClientesScreenState extends State<ClientesScreen> {
     if (_clientes.isEmpty) {
       return RefreshIndicator(
         color: roxo,
-
-        onRefresh: _carregar,
-
+        onRefresh: _carregarInicial,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           children: const [
             SizedBox(height: 140),
             Icon(Icons.people_outline, size: 80, color: roxo),
-
             SizedBox(height: 20),
-
             Center(
               child: Text(
-                'Nenhum cliente cadastrado',
+                'Nenhum cliente encontrado',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
@@ -231,16 +316,22 @@ class _ClientesScreenState extends State<ClientesScreen> {
       );
     }
 
-    // LISTA
     return RefreshIndicator(
       color: roxo,
-
-      onRefresh: _carregar,
-
+      onRefresh: _carregarInicial,
       child: ListView.builder(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        itemCount: _clientes.length,
+        itemCount: _clientes.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == _clientes.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator(color: roxo)),
+            );
+          }
+
           final cliente = _clientes[index];
           final isEditando = _editandoId == cliente.id;
 
@@ -300,7 +391,6 @@ class _ClientesScreenState extends State<ClientesScreen> {
           ],
         ),
         const SizedBox(height: 16),
-
         Row(
           children: [
             const Icon(Icons.phone, color: roxo, size: 20),
@@ -363,8 +453,6 @@ class _ClientesScreenState extends State<ClientesScreen> {
           ),
         ),
         const SizedBox(height: 16),
-
-
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -376,7 +464,6 @@ class _ClientesScreenState extends State<ClientesScreen> {
               ),
             ),
             const SizedBox(width: 8),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: verdeAgua,
@@ -385,7 +472,6 @@ class _ClientesScreenState extends State<ClientesScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-
               onPressed: _salvando ? null : () => _salvarEdicao(cliente.id!),
               child: _salvando
                   ? const SizedBox(

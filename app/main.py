@@ -93,11 +93,17 @@ def buscar_entregas_do_dia(
     return peca_service.listar_entregas_do_dia(data_alvo)
 
 @app.get("/pecas/all", tags=["Busca"], response_model=List[AllPecasOut])
-def listar_todas_pecas(peca_service: PecaService = Depends(get_peca_service)):
+def listar_todas_pecas(
+    skip: int = Query(0, description="Número de registros para pular (paginação)"),
+    limit: int = Query(10, description="Limite de registros retornados (paginação)"),
+    search: str = Query("", description="Busca por descrição ou cliente"),
+    peca_service: PecaService = Depends(get_peca_service)
+):
     """
-    Endpoint para listar todas as peças, usado para debug e conferência.
+    Endpoint para listar todas as peças. 
+    Suporta a paginação e busca.
     """
-    return peca_service.listar_todas_pecas()
+    return peca_service.listar_todas_pecas(skip=skip, limit=limit, search=search)
 
 @app.post("/notificar/enviar", tags=["Notificações"], response_model=NotificacaoOut)
 def registrar_notificacao_enviada(
@@ -121,8 +127,16 @@ def registrar_notificacao_enviada(
         raise HTTPException(status_code=429, detail=str(e))
 
 @app.get("/clientes", tags=["Busca"], response_model=List[ClienteOut])
-def listar_todos_clientes(cliente_service: ClienteService = Depends(get_cliente_service)):
-    return cliente_service.repository.get_all_ativos()
+def listar_todos_clientes(
+    skip: int = Query(0, description="Número de registros para pular"),
+    limit: int = Query(10, description="Limite de registros retornados"),
+    search: str = Query("", description="Busca por nome ou telefone"),
+    cliente_service: ClienteService = Depends(get_cliente_service)
+):
+    """
+    Lista clientes ativos com suporte a paginação e busca.
+    """
+    return cliente_service.listar_clientes_ativos(skip=skip, limit=limit, search=search)
 
 @app.get("/clientes/buscar", tags=["Busca"])
 def buscar_cliente_por_telefone(telefone: str, cliente_service: ClienteService = Depends(get_cliente_service)):

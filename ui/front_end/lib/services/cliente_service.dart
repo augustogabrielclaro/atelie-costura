@@ -5,8 +5,12 @@ import 'api_service.dart';
 class ClienteService {
   final Dio _dio = ApiService.dio;
 
-  Future<List<Cliente>> listarTodosClientes() async {
-    final response = await _dio.get('/clientes');
+  Future<List<Cliente>> listarTodosClientes({int skip = 0, int limit = 10, String search = ''}) async {
+    final response = await _dio.get('/clientes', queryParameters: {
+      'skip': skip,
+      'limit': limit,
+      'search': search,
+    });
     return (response.data as List).map((c) => Cliente.fromJson(c)).toList();
   }
 
